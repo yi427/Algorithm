@@ -9,12 +9,21 @@ public:
         arr.resize(unique(begin(arr), end(arr)) - begin(arr));
         this->length = size(arr);
     }
-    int pos(T val) { return lower_bound(begin(arr), end(arr), val) - begin(arr); }
-    int greater(T val) { return lower_bound(begin(arr), end(arr), val+1) - begin(arr); }
-    int greater_equal(T val) { return pos(val); }
-    int less(T val) { return greater_equal(val) - 1;}
-    int less_equal(T val) { return greater(val) - 1; }
-    int len() { return length; }
+
+    [[nodiscard]] int pos(T val) const { return lower_bound(begin(arr), end(arr), val) - begin(arr); }
+
+    [[nodiscard]] int greater(T val) const { return lower_bound(begin(arr), end(arr), val + 1) - begin(arr); }
+
+    [[nodiscard]] int greater_equal(T val) const { return pos(val); }
+
+    [[nodiscard]] int less(T val) const { return greater_equal(val) - 1; }
+
+    [[nodiscard]] int less_equal(T val) const { return greater(val) - 1; }
+
+    [[nodiscard]] int len() const { return length; }
+
+    [[nodiscard]] T get(int p) const { return arr[p]; }
+
 private:
     vector<T> arr;
     int length;
