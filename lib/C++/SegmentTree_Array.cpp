@@ -47,7 +47,7 @@ public:
 
 private:
     vector<U> seg; // This is the segment array
-    vector<int> todo;
+    vector<U> todo;
     vector<T>& arr;
     Func op;
     U d_val;
@@ -70,7 +70,7 @@ private:
         }
         auto res = d_val;
         int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
-        if (todo[v]) push_down(v, l, r, left, right);
+        push_down(v, l, r, left, right);
         if (L <= m) res = query(left, l, m, L, R);
         if (R > m) res = op(res, query(right, m+1, r, L, R), l, r);
         return res;
@@ -83,7 +83,7 @@ private:
             return;
         }
         int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
-        if (todo[v]) push_down(v, l, r, left, right);
+        push_down(v, l, r, left, right);
         if (L <= m) update(left, l, m, L, R, val);
         if (R > m) update(right, m+1, r, L, R, val);
         seg[v] = op(seg[left], seg[right], l, r);
@@ -102,7 +102,7 @@ private:
             if (l == r) return l;
         }
         int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
-        if (todo[v]) push_down(v, l, r, left, right);
+        push_down(v, l, r, left, right);
         int pos = max_right(left, l, m, s, L, com);
         if (pos != -1) return pos;
         return max_right(right, m+1, r, s, L, com);
@@ -121,7 +121,7 @@ private:
             if (l == r) return l;
         }
         int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
-        if (todo[v]) push_down(v, l, r, left, right);
+        push_down(v, l, r, left, right);
         int pos = min_left(right, m+1, r, s, R, com);
         if (pos != -1) return pos;
         return min_left(left, l, m, s, R, com);
@@ -129,6 +129,8 @@ private:
 
     void push_down(int v, int l, int r, int left, int right)
     {
+        // Notes: this is need to change
+        if (todo[v] == 0) return;
         int m = (l+r) >> 1;
         does(left, l, m, todo[v]);
         does(right, m+1, r, todo[v]);
