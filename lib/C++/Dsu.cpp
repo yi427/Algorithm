@@ -1,5 +1,5 @@
 // This is the Disjoint Sets Union
-// finished time: 2023.6.12
+// start time: 2023.6.12
 // author: pan__
 #include <algorithm>
 #include <stdlib.h>
@@ -11,7 +11,7 @@ using namespace std;
 
 class Dsu {
 public:
-    explicit Dsu(int _n) : parent_or_size(_n, -1), n(_n) { }
+    explicit Dsu(int _n) : parent_or_size(_n, -1), n(_n), counter(_n) { }
     int find_set(int a) {
         assert(a >= 0 && a < n);
         if (parent_or_size[a] < 0) return a;
@@ -25,6 +25,7 @@ public:
         if (-parent_or_size[x] < -parent_or_size[y]) swap(x, y);
         parent_or_size[x] += parent_or_size[y];
         parent_or_size[y] = x;
+        counter--;
         return x;
     }
     bool isConnected(int x, int y) {
@@ -33,7 +34,10 @@ public:
     int size(int a) {
         return -parent_or_size[find_set(a)];
     }
+    int connected() {
+        return counter;
+    }
 private:
-    int n;
+    int n, counter;
     vector<int> parent_or_size;
 };
