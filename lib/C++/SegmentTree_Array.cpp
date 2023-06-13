@@ -127,6 +127,9 @@ private:
         return min_left(left, l, m, s, R, com);
     }
 
+    static inline constexpr int gl(int v) { return v+1; }
+    static inline constexpr int gr(int v, int m, int l) { return v+2*(m-l+1); }
+
     void push_down(int v, int l, int r, int left, int right)
     {
         // Notes: this is need to change
@@ -137,20 +140,16 @@ private:
         todo[v] = 0;
     }
 
-    void does(int v, int l, int r, int val)
+    void does(int v, int l, int r, T val)
     {
-        seg[v] += val;
-        todo[v] += val;
+        seg[v] = val;
+        todo[v] = val;
     }
-
-    static inline constexpr int gl(int v) { return v+1; }
-    static inline constexpr int gr(int v, int m, int l) { return v+2*(m-l+1); }
 };
 
 constexpr auto op = [](auto x, auto y, int l, int r) {
-    return x+y;
+    return x + y;
 };
-
 int main()
 {
     constexpr int n = 10;
