@@ -31,6 +31,10 @@ public:
     bool isConnected(int x, int y) {
         return find_set(x) == find_set(y);
     }
+    bool isRoot(int x) {
+        assert(x >= 0 && x < n);
+        return parent_or_size[x] < 0;
+    }
     int size(int a) {
         return -parent_or_size[find_set(a)];
     }
