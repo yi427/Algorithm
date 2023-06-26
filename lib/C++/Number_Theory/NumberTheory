@@ -1,1 +1,57 @@
+// started time: 2023.6.26
+// author: pan__
+namespace NumTheory {
+    using i64 = long long;
+    using ui64 = unsigned long long;
+    namespace helper {
+        template<typename>
+        struct prime {
+            static constexpr NumTheory::i64 values[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
+        };
+        template<>
+        struct prime<int> {
+            static constexpr NumTheory::i64 values[] = {2, 7, 61};
+        };
+    }
 
+    constexpr i64 safe_mod(i64 x, i64 m) {
+        x %= m;
+        if (x < 0) return x + m;
+        return x;
+    }
+
+    constexpr ui64 pow_mod(i64 x, i64 n, int m) {
+        if (m == 1) return 0;
+        auto _m = (unsigned int) (m);
+        ui64 r = 1, y = safe_mod(x, m);
+        while (n) {
+            if (n & 1) r = (r * y) % _m;
+            y = (y * y) % _m;
+            n >>= 1;
+        }
+        return r;
+    }
+
+    template<typename T>
+    constexpr bool is_prime(T n) {
+        if (n <= 1) return false;
+        using bases = helper::prime<T>;
+        for (auto b: bases::values)
+            if (n == b) return true;
+        if (n % 2 == 0) return false;
+        i64 d = n - 1;
+        while (d % 2 == 0) d /= 2;
+        for (auto a: bases::values) {
+            long long t = d, y = pow_mod(a, t, n);
+            while (t != n - 1 && y != 1 && y != n - 1) {
+                y = y * y % n;
+                t <<= 1;
+            }
+            if (y != n - 1 && t % 2 == 0)
+                return false;
+        }
+        return true;
+    }
+
+    template<int n> constexpr bool is_prime_constexpr = is_prime(n);
+}
