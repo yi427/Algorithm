@@ -14,7 +14,7 @@ namespace NumTheory {
         };
     }
 
-    constexpr i64 safe_mod(i64 x, i64 m) {
+    constexpr ui64 safe_mod(i64 x, const i64 m) {
         x %= m;
         if (x < 0) return x + m;
         return x;
@@ -54,4 +54,33 @@ namespace NumTheory {
     }
 
     template<int n> constexpr bool is_prime_constexpr = is_prime(n);
+
+    template<int n>
+    std::vector<int> Eratosthenes() {
+        int p = 0;
+        static bool is_prime[n+1];
+        std::vector<int> prime;
+        for (int i = 2; i <= n; i++) {
+            if (!is_prime[i]) prime.push_back(i);
+            if (i64(i) * i > n) continue;
+            for (int j = i*i; j <= n; j += i)
+                is_prime[i] = true;
+        }
+        return prime;
+    }
+
+    template<size_t n>
+    std::vector<int> Euler() {
+        static bool is_prime[n+1];
+        std::vector<int> prime;
+        for (int i = 2; i <= n; ++i) {
+            if (!is_prime[i]) prime.push_back(i);
+            for (auto p : prime) {
+                if (i * p > n) break;
+                is_prime[i*p] = true;
+                if (i % p == 0) break;
+            }
+        }
+        return prime;
+    }
 }
