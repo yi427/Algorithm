@@ -10,11 +10,9 @@ using namespace std;
 // 测试题目:
 // https://www.acwing.com/problem/content/description/1272/
 // https://leetcode.cn/problems/sliding-window-maximum/
-template<typename T, class F, typename H = int> class FenWick {
+template<typename T, class F> class FenWick {
 public:
-    using U = typename std::conditional_t<std::is_signed_v<T> && std::is_unsigned_v<H>,
-            std::make_unsigned_t<T>,
-            std::common_type_t<T>>;
+    using U = T;
     explicit FenWick(size_t _n, vector<T>& _a, U _val, F _op): n(_n), d_val(_val), b1(_n+2, _val), b2(_n+2, _val), op(_op), nums(_a) {}
     explicit FenWick(vector<T>& _a,  F _op,  U _val = U{}): FenWick(size(_a), _a, _val, _op) {
         for (int i = 1; i <= n; ++i) {
