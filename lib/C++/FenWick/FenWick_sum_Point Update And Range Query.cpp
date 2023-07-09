@@ -1,11 +1,9 @@
 // started time: 2023.6.19
 // author: pan__
 
-template<typename T, typename H = int> class Fenwick {
+template<typename T> class Fenwick {
 public:
-    using U = typename std::conditional_t<std::is_signed_v<T> && std::is_unsigned_v<H>,
-            std::make_unsigned_t<T>,
-            std::common_type_t<T>>;
+    using U = T;
     explicit Fenwick(size_t _n): n(_n), bit(_n) {}
     explicit Fenwick(const vector<T>& a): Fenwick(size(a)) {
         for (size_t i = 0; i < n; ++i) {
