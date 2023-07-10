@@ -1,0 +1,77 @@
+// Point Update And range Query
+template<typename T, class Func, typename U>
+class SegmentTree {
+public:
+    explicit SegmentTree(vector<T>& arr, Func f, U val): arr(arr), op(f), d_val(val)
+    {
+        seg.resize(size(arr) << 1);
+        build(1, 0, size(arr)-1);
+    }
+
+    U query(int L, int R)
+    {
+        assert(L <= R);
+        return query(1, 0, size(arr)-1, L, R);
+    }
+
+    void update(int idx, T val)
+    {
+        assert(0 <= idx && idx < size(arr));
+        update(1, 0, size(arr)-1, idx, val);
+    }
+
+    U queryAll() { return seg[1]; }
+
+private:
+    vector<U> seg; // This is the segment array
+    vector<T>& arr;
+    Func op;
+    U d_val;
+    void build(int v, int l, int r)
+    {
+        if (l == r) {
+            does(v, l, r, arr[l]);
+            return;
+        }
+        int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
+        build(left, l, m);
+        build(right, m+1, r);
+        seg[v] = op(seg[left], seg[right], l, r);
+    }
+
+    U query(int v, int l, int r, int L, int R)
+    {
+        if (L <= l && r <= R || l == r) {
+            return seg[v];
+        }
+        auto res = d_val;
+        int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
+        if (L <= m) res = query(left, l, m, L, R);
+        if (R > m) res = op(res, query(right, m+1, r, L, R), l, r);
+        return res;
+    }
+
+    void update(int v, int l, int r, int idx, T val)
+    {
+        if (l == r) {
+            does(v, l, r, val);
+            return;
+        }
+        int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
+        if (idx <= m) update(left, l, m, idx, val);
+        else update(right, m+1, r, idx, val);
+        seg[v] = op(seg[left], seg[right], l, r);
+    }
+
+    static inline constexpr int gl(int v) { return v+1; }
+    static inline constexpr int gr(int v, int m, int l) { return v+2*(m-l+1); }
+
+    void does(int v, int l, int r, T val)
+    {
+        seg[v] += val;
+    }
+};
+
+constexpr auto op = [](auto x, auto y, int l, int r) {
+    return x + y;
+};
