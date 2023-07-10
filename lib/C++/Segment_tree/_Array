@@ -1,0 +1,181 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// finished time: 2023.6.9
+// author: pan__
+template<typename T, class Func, typename U>
+class SegmentTree {
+public:
+    explicit SegmentTree(vector<T>& arr, Func f, U val): arr(arr), op(f), d_val(val)
+    {
+        seg.resize(size(arr) << 1);
+        todo.resize(size(arr) << 1);
+        build(1, 0, size(arr)-1);
+    }
+
+    U query(int L, int R)
+    {
+        assert(L <= R);
+        return query(1, 0, size(arr)-1, L, R);
+    }
+
+    void update(int L, int R, T val)
+    {
+        assert(L <= R);
+        update(1, 0, size(arr)-1, L, R, val);
+    }
+
+    void update(int idx, T val) { update(idx, idx, val); }
+
+    U queryAll() { return seg[1]; }
+
+    template<class _f>
+    int max_right(int L, _f com)
+    {
+        U res = d_val;
+        return max_right(1, 0, size(arr)-1, res, L, com);
+    }
+
+    template<class _f>
+    int min_left(int R, _f com)
+    {
+        U res = d_val;
+        return min_left(1, 0, size(arr)-1, res, R, com);
+    }
+
+private:
+    vector<U> seg; // This is the segment array
+    vector<U> todo;
+    vector<T>& arr;
+    Func op;
+    U d_val;
+    void build(int v, int l, int r)
+    {
+        if (l == r) {
+            does(v, l, r, arr[l]);
+            return;
+        }
+        int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
+        build(left, l, m);
+        build(right, m+1, r);
+        seg[v] = op(seg[left], seg[right], l, r);
+    }
+
+    U query(int v, int l, int r, int L, int R)
+    {
+        if (L <= l && r <= R || l == r) {
+            return seg[v];
+        }
+        auto res = d_val;
+        int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
+        push_down(v, l, r, left, right);
+        if (L <= m) res = query(left, l, m, L, R);
+        if (R > m) res = op(res, query(right, m+1, r, L, R), l, r);
+        return res;
+    }
+
+    void update(int v, int l, int r, int L, int R, T val)
+    {
+        if (L <= l && r <= R || l == r) {
+            does(v, l, r, val);
+            return;
+        }
+        int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
+        push_down(v, l, r, left, right);
+        if (L <= m) update(left, l, m, L, R, val);
+        if (R > m) update(right, m+1, r, L, R, val);
+        seg[v] = op(seg[left], seg[right], l, r);
+    }
+
+    template<class _f>
+    int max_right(int v, int l, int r, U& s, int L, _f com)
+    {
+        if (r < L) return -1;
+        if (L <= l) {
+            U t = op(s, seg[v], l, r);
+            if (com(t)) {
+                s = t;
+                return -1;
+            }
+            if (l == r) return l;
+        }
+        int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
+        push_down(v, l, r, left, right);
+        int pos = max_right(left, l, m, s, L, com);
+        if (pos != -1) return pos;
+        return max_right(right, m+1, r, s, L, com);
+    }
+
+    template<class _f>
+    int min_left(int v, int l, int r, U& s, int R, _f com)
+    {
+        if (l > R) return -1;
+        if (R >= r) {
+            U t = op(s, seg[v], l, r);
+            if (com(t)) {
+                s = t;
+                return -1;
+            }
+            if (l == r) return l;
+        }
+        int m = (l+r) >> 1, left = gl(v), right = gr(v, m, l);
+        push_down(v, l, r, left, right);
+        int pos = min_left(right, m+1, r, s, R, com);
+        if (pos != -1) return pos;
+        return min_left(left, l, m, s, R, com);
+    }
+
+    static inline constexpr int gl(int v) { return v+1; }
+    static inline constexpr int gr(int v, int m, int l) { return v+2*(m-l+1); }
+
+    void push_down(int v, int l, int r, int left, int right)
+    {
+        // Notes: this is need to change
+        if (todo[v] == 0) return;
+        int m = (l+r) >> 1;
+        does(left, l, m, todo[v]);
+        does(right, m+1, r, todo[v]);
+        todo[v] = 0;
+    }
+
+    void does(int v, int l, int r, T val)
+    {
+        seg[v] = val;
+        todo[v] = val;
+    }
+};
+
+constexpr auto op = [](auto x, auto y, int l, int r) {
+    return x + y;
+};
+int main()
+{
+    constexpr int n = 10;
+    vector v(n, int{});
+    SegmentTree t(v, op, int{});
+    // v 是底层数组，传进去的是 引用
+    // 需要传进去 op 函数，处理每次的区间合并
+    // 第三个参数对应的 默认值，查询操作的时候 需要设置一个默认值
+    // 不同题目对应的默认值是不同的，以下举几个例子
+    // 1. 对于求和操作：  默认值为 0
+    // 2. 对于最大值操作：默认值为 TYPE_MIN
+    // 3. 对于最小值操作：默认值为 TYPE_MAX
+    // 4. 对于 GCD 操作：默认值为 0  // 因为 0 跟 任何数 的 gcd 是它本身
+    // 5. 对于 LCM 操作：默认值为 1  // 因为 1 跟 任何数 的 lcm 是它本身
+    // 最后 不同的题 需要更改 类里面的 `does` 函数，这个函数的 懒标记 下传函数，写到里面是不增加程序复杂度。
+
+    // 函数简介：
+    // 构造函数自动调用 build 函数构造 线段树
+    // 所有的区间都是 从 0 开始，到 size(arr)-1
+    // query: [L, R] -> val
+    // update: [L, R, val] -> void 区间更改
+    // update: [idx, val] -> void  单点更改  // 注意，并没有单独实现单点更改，仅仅是 调用了长度为 1 的区间更改
+    // max_right: [L, com] -> int  树上二分查找区间 最大的 R 的下标的下一个位置 // 使用前提，区间满足 单调递增/单调递减
+    // https://leetcode.cn/problems/number-of-subarrays-with-lcm-equal-to-k/
+    // min_left:  [R, com] -> int  树上二分查找区间 最小的 L 的下标的前一个位置 // 使用前提，区间满足 单调递增/单调递减
+    // https://leetcode.cn/problems/number-of-subarrays-with-gcd-equal-to-k/
+    // https://zhuanlan.zhihu.com/p/573489802 // 这个是关于 树上二分的教程
+    return 0;
+}
