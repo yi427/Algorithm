@@ -17,13 +17,13 @@ public:
 
     U query(int L, int R)
     {
-        assert(L <= R);
+        assert(L <= R && R < size(arr));
         return query(1, 0, size(arr)-1, L, R);
     }
 
     void update(int L, int R, T val)
     {
-        assert(L <= R);
+        assert(L <= R && R < size(arr));
         update(1, 0, size(arr)-1, L, R, val);
     }
 
