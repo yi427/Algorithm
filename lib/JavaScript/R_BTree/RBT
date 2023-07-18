@@ -6,7 +6,9 @@ class TreeMap {
         this.#t = new RedBlackTree(com);
     }
     get(key) {
-        return this.#t.get(key);
+        let res = this.#t.get(key);
+        if (!res) return null;
+        return res.val;
     }
     getOrDefault(key, v) {
         let ans = this.get(key);
@@ -17,13 +19,44 @@ class TreeMap {
         this.#t.put(key, val);
     }
     delete(key) {
-        this.#t.delete(key);
+        let res = this.#t.delete(key);
+        if (!res) return this.#makeNode();
+        return this.#makeNode(res.key, res.val);
     }
     ceiling(key) {
-        return this.#t.ceiling(key);
+        let res = this.#t.ceiling(key);
+        if (!res) return this.#makeNode();
+        return this.#makeNode(res.key, res.val);
     }
     floor(key) {
-        return this.#t.floor(key);
+        let res = this.#t.floor(key);
+        if (!res) return this.#makeNode();
+        return this.#makeNode(res.key, res.val);
+    }
+    next(key) {
+        let h = this.#t.successor(this.#t.get(key));
+        if (!h) return this.#makeNode();
+        return this.#makeNode(h.key, h.val);
+    }
+    [Symbol.iterator]() {
+        let i = this.#t.min(), f = this.#t.successor;
+        return {
+          next() {
+              if (i) {
+                  let res = [i.key, i.val];
+                  i = f(i);
+                  return { done: false, value: res };
+              } else {
+                  return { done: true, value: undefined };
+              }
+          },
+          return() {
+              return { done: true };
+          }
+        };
+    }
+    #makeNode = function (key = null, val = null) {
+        return {key, val};
     }
     #t;
 }
@@ -35,7 +68,7 @@ class RedBlackTree {
     get(key) {
         let ans = this.#get_helper(this.#root, key);
         if (!ans) return null;
-        return ans.val;
+        return ans;
     }
     put(key, val) {
         this.#put_helper(this.#root, key, val);
@@ -43,7 +76,8 @@ class RedBlackTree {
     }
     delete(key) {
         let x = this.#get_helper(this.#root, key);
-        this.#delete_helper(x);
+        if (!x) return null;
+        return this.#delete_helper(x);
     }
     min() {
         return this.#min_helper(this.#root);
@@ -55,6 +89,14 @@ class RedBlackTree {
     }
     ceiling(key) {
         return this.#ceiling_helper(this.#root, key);
+    }
+    successor(h) {
+        if (!h) return null;
+        if (h.right) return this.#min_helper(h.right);
+        let y = h.parent;
+        while (y&& y.right === h)
+            [y, h] = [y.parent, y]
+        return y;
     }
     #com = (x, y) => { return x - y; }
     #root = null;
@@ -103,10 +145,11 @@ class RedBlackTree {
         this.#fixAfterInsertion(newNode);
     }
     #delete_helper(h) {
+        let res = this.successor(h);
         if (h.left && h.right) {
-            let s = this.#successor(h);
+            let s = this.successor(h);
             [h.key, h.val] = [s.key, s.val];
-            h = s;
+            [h, res] = [s, h];
         }
         let r = null;
         if (h.left) r = h.left;
@@ -128,6 +171,7 @@ class RedBlackTree {
                 this.#remove(h);
             }
         }
+        return res;
     }
     /** Helper Function **/
     #fixAfterInsertion(h) {
@@ -222,9 +266,6 @@ class RedBlackTree {
     #min_helper(h) {
         if (!h.left) return h;
         return this.#min_helper(h.left);
-    }
-    #successor(h) {
-        return this.#min_helper(h.right);
     }
     #rotateLeft(h) {
         let x = h.right;
