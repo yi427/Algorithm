@@ -5,7 +5,7 @@
 template<class T> class String_hash {
 public:
     using ui64 = unsigned long long;
-    explicit String_hash(const std::vector<T> &s, char v = '1', size_t p = 13331)
+    explicit String_hash(const std::vector<T> &s, char v = 'a', size_t p = 13331)
         : n(size(s)), str(s), h(size(s) + 1), p_pow(size(s) + 1), v(v), P(p) {
         init();
     }
